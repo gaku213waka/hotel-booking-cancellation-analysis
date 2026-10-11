@@ -20,6 +20,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
+# Streamlit local secrets (public theme config is tracked)
+.streamlit/secrets.toml
+
 # Local database and generated files
 postgres_data/
 *.log

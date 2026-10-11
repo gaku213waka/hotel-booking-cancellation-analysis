@@ -16,6 +16,12 @@ REQUIRED_FILES = [
     "notebooks/02_Cancellation_Prediction.ipynb",
     "notebooks/03_SHAP_Analysis.ipynb",
     "notebooks/04_Business_Recommendations.ipynb",
+    "notebooks/05_ROI_Sensitivity_Analysis.ipynb",
+    "app.py",
+    ".streamlit/config.toml",
+    "src/roi_simulator.py",
+    "tests/test_roi_simulator.py",
+    "tests/test_streamlit_app.py",
     "sql/00_create_table.sql",
     "sql/01_load_data.sql",
     "sql/02_eda_queries.sql",
@@ -27,6 +33,7 @@ REQUIRED_FILES = [
     "images/shap_grouped_importance.png",
     "images/final_test_confusion_matrix.png",
     "images/roi_sensitivity.png",
+    "images/roi_sensitivity_heatmap.png",
 ]
 
 

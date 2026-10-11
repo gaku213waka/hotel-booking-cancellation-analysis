@@ -10,4 +10,5 @@ ipykernel==6.31.0
 jupyterlab==4.4.7
 nbformat==5.10.4
 nbclient==0.10.2
+streamlit==1.64.0
 

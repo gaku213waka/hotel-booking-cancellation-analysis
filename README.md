@@ -45,6 +45,7 @@
 - Matplotlib / Seaborn
 - scikit-learn
 - SHAP
+- Streamlit
 - PostgreSQL 16 / SQL
 - Docker Compose
 - JupyterLab
@@ -58,6 +59,7 @@
 | 3 | [`02_Cancellation_Prediction.ipynb`](notebooks/02_Cancellation_Prediction.ipynb) | データリーク対策、時系列分割、モデル比較、閾値調整、Final Test |
 | 4 | [`03_SHAP_Analysis.ipynb`](notebooks/03_SHAP_Analysis.ipynb) | 予測根拠と特徴量重要度の確認 |
 | 5 | [`04_Business_Recommendations.ipynb`](notebooks/04_Business_Recommendations.ipynb) | 施策提案、対象者分析、費用対効果、A/Bテスト案 |
+| 6 | [`05_ROI_Sensitivity_Analysis.ipynb`](notebooks/05_ROI_Sensitivity_Analysis.ipynb) | 施策コスト・追加利益・削減率を変えた費用対効果の感度分析 |
 
 ## 5. 主な分析結果
 
@@ -156,6 +158,16 @@ ValidationでF1-scoreが最大となった0.30を判定閾値として選び、�
 
 ![費用対効果の感度分析](images/roi_sensitivity.png)
 
+追加の感度分析では、施策コスト、防止1件あたりの追加利益、キャンセル削減率を個別・同時に変更し、黒字と赤字の境界を確認できるようにしました。対象内の実キャンセル6,670件は過去のFinal Testに基づく事後集計であり、将来の効果を保証する値ではありません。
+
+![施策コストと追加利益の感度分析](images/roi_sensitivity_heatmap.png)
+
+### Streamlitシミュレーター
+
+[`app.py`](app.py)では、施策コスト（0〜1,000円）、キャンセル防止1件あたりの追加利益（3,000〜30,000円）、キャンセル削減率（0〜20%）を操作できます。差引利益、損益分岐点、ROI、削減率別グラフ、費用と利益のヒートマップが即時に更新されます。
+
+アプリは公開済みの集計値だけを使用するため、CSVやPostgreSQLがなくても単体で動作します。計算処理は[`src/roi_simulator.py`](src/roi_simulator.py)にまとめ、Notebookとアプリで共通利用しています。
+
 施策効果は、確定済みモデルで対象を抽出したうえでControl群とTreatment群へ無作為割付するA/Bテストで検証する計画です。
 
 ## 8. 考察と今後の課題
@@ -172,14 +184,17 @@ ValidationでF1-scoreが最大となった0.30を判定閾値として選び、�
 ```text
 .
 ├── README.md
+├── app.py                 # Streamlit費用対効果シミュレーター
 ├── requirements.txt
 ├── .gitignore
+├── .streamlit/            # 公開用テーマ設定（secrets.tomlは除外）
 ├── data/                  # CSVはGit管理対象外
 ├── docker/                # PostgreSQL環境
 ├── images/                # README掲載画像
-├── notebooks/             # 01〜04の完成版Notebook
+├── notebooks/             # 01〜05の完成版Notebook
 ├── sql/                   # テーブル作成・読込・EDA集計
-└── src/                   # 図の出力・公開前検証スクリプト
+├── src/                   # 共通計算・図の出力・公開前検証スクリプト
+└── tests/                 # 費用対効果計算とアプリのテスト
 ```
 
 ## 10. 実行方法
@@ -199,6 +214,22 @@ jupyter lab
 ```
 
 Notebookは`01_EDA.ipynb`から番号順に実行します。それぞれ単独でも実行できるよう、必要な読み込みと前処理を含めています。
+
+費用対効果シミュレーターの起動：
+
+```bash
+streamlit run app.py
+```
+
+ブラウザで表示された画面から条件を変更できます。アプリだけを試す場合、データセットやPostgreSQLの準備は不要です。
+
+Streamlit Community Cloudでは、このGitHubリポジトリ、`main`ブランチ、エントリーポイント`app.py`を指定してデプロイできます。必要な依存関係とテーマ設定はリポジトリ内に含めています。認証情報は使用しないため、Secretsの登録は不要です。
+
+テストの実行：
+
+```bash
+python -m unittest discover -s tests
+```
 
 README画像の再出力と公開前検証：
 
