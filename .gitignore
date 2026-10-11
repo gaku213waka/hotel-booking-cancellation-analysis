@@ -1,0 +1,35 @@
+# Dataset: download separately (see README)
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+!docker/.env.example
+docker/.env
+.venv/
+venv/
+env/
+
+# Python / Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+
+# Local database and generated files
+postgres_data/
+*.log
+
+# Legacy work and private notes retained locally, not published
+archive/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
