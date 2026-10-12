@@ -14,6 +14,7 @@ Streamlitアプリは次の4ページで構成しています。
 | Recommendations | 長期予約、Groups、高リスク予約への3つの施策案 |
 
 CSVはリポジトリに含めません。ローカルCSVがない場合、アプリはTidyTuesdayが公開する同一データを実行時に取得します。元データはAntónio, de Almeida, and Nunes (2019) によるCC BY 4.0のデータです。出典を保持し、元CSVそのものは本リポジトリから再配布していません。
+https://hotel-booking-cancellation-analysis-j8uhs3nftdhl9yj2dldwus.streamlit.app/
 
 ## 分析の目的
 
