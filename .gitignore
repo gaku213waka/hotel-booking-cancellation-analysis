@@ -23,6 +23,12 @@ __pycache__/
 # Streamlit local secrets (public theme config is tracked)
 .streamlit/secrets.toml
 
+# Locally exported trained model artifacts
+models/*.joblib
+models/*.pkl
+!models/README.md
+!models/final_random_forest_pipeline.joblib
+
 # Local database and generated files
 postgres_data/
 *.log

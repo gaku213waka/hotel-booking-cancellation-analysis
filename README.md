@@ -1,119 +1,51 @@
 # Hotel Booking Cancellation Analysis
 
-ホテル予約データを使い、キャンセル傾向の把握から予測モデル、SHAPによる解釈、施策と費用対効果の試算までを行った分析プロジェクトです。
+ホテル予約データを用いて、キャンセル傾向の把握、予約登録直後の情報によるキャンセル予測、SHAPによる予測根拠の確認、施策提案までを一貫して行ったポートフォリオです。
 
-単に精度の高いモデルを作るのではなく、**予約登録直後に利用できる情報だけで予測し、キャンセルの見逃しを減らしながら、ホテルが実行できる対応へつなげること**を目的としました。
+## ダッシュボード
 
-## 1. プロジェクト概要
+Streamlitアプリは次の4ページで構成しています。
 
-ホテルの予約キャンセルは、客室在庫や売上計画に影響します。本プロジェクトでは、次の問いを設定しました。
+| ページ | 内容 |
+|---|---|
+| Overview | 全体KPI、市場セグメント・ホテル種別・Lead Time別のキャンセル傾向 |
+| EDA | 国別、リピーター別、ADRとLead Timeの関係 |
+| Prediction | 保存済みRandom Forest Pipelineによる予約1件ごとのキャンセル確率と閾値0.30の判定 |
+| Recommendations | 長期予約、Groups、高リスク予約への3つの施策案 |
 
-- どのような予約でキャンセル率が高いか
-- 予約登録直後の情報からキャンセルリスクを予測できるか
-- 予測結果を、確認メールや予約内容の再確認などの施策にどう活用できるか
+CSVはリポジトリに含めません。ローカルCSVがない場合、アプリはTidyTuesdayが公開する同一データを実行時に取得します。元データはAntónio, de Almeida, and Nunes (2019) によるCC BY 4.0のデータです。出典を保持し、元CSVそのものは本リポジトリから再配布していません。
 
-分析は、SQL集計、PythonによるEDA、Random Forest、閾値調整、SHAP、施策シミュレーションの順に進めています。
+## 分析の目的
 
-### 主な結果
+ホテル予約のキャンセルは客室在庫や売上計画に影響します。本分析では、キャンセル率が高い予約の傾向、予約登録直後に利用可能な情報だけでの予測可能性、予測結果を施策にどう活用できるかを検討しました。
+
+## 使用データ
+
+- データセット: Hotel Booking Demand（119,390件、32列）
+- 目的変数: `is_canceled`（1: キャンセル、0: 非キャンセル）
+- 一次出典: [António, de Almeida, and Nunes (2019)](https://doi.org/10.1016/j.dib.2018.11.126)（CC BY 4.0）
+- 公開取得先: [TidyTuesday: Hotels](https://github.com/rfordatascience/tidytuesday/tree/main/data/2020/2020-02-11)
+
+## 主な結果
 
 | 項目 | 結果 |
 |---|---:|
 | 全体キャンセル率 | 37.0% |
 | Lead Time 61日以上のキャンセル率 | 48.4% |
-| `market_segment = Groups`のキャンセル率 | 61.1% |
+| `market_segment = Groups` のキャンセル率 | 61.1% |
 | Final Test ROC-AUC | 0.8622 |
 | Final Test Recall（閾値0.30） | 0.8935 |
 | Final Test Precision（閾値0.30） | 0.5548 |
-| 高リスク対象件数 | 12,022件（Final Testの50.7%） |
 
-## 2. 使用データ
-
-- データセット：Hotel Booking Demand
-- 取得先：[Kaggle - Hotel booking demand](https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand)
-- 原論文：[António, Almeida, and Nunes (2019), Hotel booking demand datasets](https://doi.org/10.1016/j.dib.2018.11.126)
-- 件数：119,390予約
-- 列数：32列（ホテル種別を含む）
-- 目的変数：`is_canceled`（1：キャンセル、0：非キャンセル）
-- 期間：2015年7月〜2017年8月に到着予定の予約
-
-主な変数は、`lead_time`、宿泊日数、予約経路、顧客タイプ、国、旅行代理店、過去のキャンセル回数などです。原論文はCC BY 4.0で公開されていますが、Kaggle上の配布条件との混同を避けるため、本リポジトリにはCSVを含めません。
-
-## 3. 使用技術
-
-- Python 3.13
-- pandas / NumPy
-- Matplotlib / Seaborn
-- scikit-learn
-- SHAP
-- Streamlit
-- PostgreSQL 16 / SQL
-- Docker Compose
-- JupyterLab
-
-## 4. 分析の流れ
-
-| 順序 | Notebook / SQL | 内容 |
-|---:|---|---|
-| 1 | [`sql/`](sql/) | PostgreSQLで全体・Lead Time・市場セグメント・国別集計 |
-| 2 | [`01_EDA.ipynb`](notebooks/01_EDA.ipynb) | キャンセル傾向の可視化 |
-| 3 | [`02_Cancellation_Prediction.ipynb`](notebooks/02_Cancellation_Prediction.ipynb) | データリーク対策、時系列分割、モデル比較、閾値調整、Final Test |
-| 4 | [`03_SHAP_Analysis.ipynb`](notebooks/03_SHAP_Analysis.ipynb) | 予測根拠と特徴量重要度の確認 |
-| 5 | [`04_Business_Recommendations.ipynb`](notebooks/04_Business_Recommendations.ipynb) | 施策提案、対象者分析、費用対効果、A/Bテスト案 |
-| 6 | [`05_ROI_Sensitivity_Analysis.ipynb`](notebooks/05_ROI_Sensitivity_Analysis.ipynb) | 施策コスト・追加利益・削減率を変えた費用対効果の感度分析 |
-
-## 5. 主な分析結果
-
-### Lead Timeが長い予約
-
-Lead Time 61日以上は63,714件で、キャンセル率は48.4%でした。全キャンセルの69.8%を含むため、自動リマインドの対象候補としました。ただし、Lead Timeがキャンセルを引き起こすと証明したものではありません。
-
-![Lead Time別の予約件数とキャンセル率](images/lead_time_cancellation_rate.png)
-
-### 市場セグメント
-
-`Groups`は19,811件、キャンセル率61.1%で、全体平均37.0%を上回りました。`Groups`は市場セグメント名であり、実際の人数や団体規模を直接表すとは限らない点に注意しています。
+![Lead Time別キャンセル率](images/lead_time_cancellation_rate.png)
 
 ![市場セグメント別キャンセル率](images/market_segment_cancellation_rate.png)
 
-### SHAPによるモデル解釈
+## 機械学習
 
-元特徴量単位では、`country`、`agent`、`customer_type`、`market_segment`、`lead_time`の順に予測への寄与が大きくなりました。SHAP値はモデルの予測根拠であり、キャンセルの原因を示すものではありません。また、国や代理店だけを理由に不利益な対応をしないことを施策上の注意点としています。
+予測時点は「予約登録直後」と定義し、結果確定後に得られる情報や利用可能性が不明な情報は除外しました。`reservation_status`、`reservation_status_date`、`assigned_room_type`、`booking_changes`、`days_in_waiting_list`、`deposit_type`、`adr`、`total_of_special_requests`、`company`は使用していません。
 
-![SHAP特徴量重要度](images/shap_grouped_importance.png)
-
-## 6. 機械学習モデル
-
-### 予測時点とデータリーク対策
-
-予測時点を「予約登録直後」としました。以下は予約後に確定する、または登録時点で利用可能か確認できないため除外しています。
-
-- `reservation_status`
-- `reservation_status_date`
-- `assigned_room_type`
-- `booking_changes`
-- `days_in_waiting_list`
-- `deposit_type`
-- `adr`
-- `total_of_special_requests`
-- `company`
-
-前処理は`Pipeline`と`ColumnTransformer`にまとめ、欠損値補完、上位カテゴリの選定、One-Hot Encodingを学習データ内で完結させました。
-
-### 分割方法
-
-到着予定日から`lead_time`を引いた推定予約日を使い、時系列順にTrain 60%・Validation 20%・Final Test 20%へ分割しました。予約IDがないため完全一致行は削除せず、同じ条件の重複グループが分割をまたがないことを確認しています。
-
-### モデル比較
-
-| Validationモデル | ROC-AUC | F1-score |
-|---|---:|---:|
-| Random Forest（country追加前） | 0.7930 | 0.6098 |
-| country上位17か国 | 0.8600 | 0.6303 |
-| country + agent上位10社 | 0.8804 | 0.6910 |
-
-agent上位20社はROC-AUC 0.8810でしたが、上位10社との差は0.001未満でした。カテゴリ数が少なく、Validation F1-scoreが高い上位10社モデルを採用しました。
-
-### 最終設定
+推定予約日を基準に時系列順でTrain 60%・Validation 20%・Final Test 20%へ分割しました。欠損値補完、country上位17か国・agent上位10社の選定、One-Hot EncodingはすべてPipeline内で学習データから行っています。
 
 ```python
 RandomForestClassifier(
@@ -126,7 +58,7 @@ RandomForestClassifier(
 )
 ```
 
-ValidationでF1-scoreが最大となった0.30を判定閾値として選び、方針確定後にTrain＋Validationで再学習しました。Final Testはモデルや閾値の選択には使用していません。
+ValidationでF1-scoreが最大となった0.30を閾値として採用し、設定確定後にTrainとValidationを結合して再学習しました。Final Testはモデルや閾値の選択には利用していません。
 
 | Final Test指標 | 値 |
 |---|---:|
@@ -139,122 +71,54 @@ ValidationでF1-scoreが最大となった0.30を判定閾値として選び、�
 
 ![Final Test混同行列](images/final_test_confusion_matrix.png)
 
-閾値0.30ではキャンセルの見逃しを減らせる一方、非キャンセル予約への対応も増えます。そのため、低コストな自動対応と、予測確率上位への個別対応を分ける方針としました。
+![SHAP重要度](images/shap_grouped_importance.png)
 
-## 7. ビジネス改善施策
+SHAP値やセグメント別の傾向はモデル上の寄与・関連であり、キャンセル原因を証明するものではありません。
 
-1. **長期予約への自動フォロー**  
-   Lead Time 61日以上を対象例とし、予約確認メールや宿泊前リマインドを送ります。
+## 提案する施策
 
-2. **Groups予約の内容確認**  
-   人数、部屋数、日程、支払条件、キャンセル期限を段階的に確認します。
+1. **長期予約への自動フォロー**: Lead Time 61日以上を対象に、予約確認と宿泊前リマインドを送る。
+2. **Groups予約の内容確認**: 人数、部屋数、日程、支払条件、キャンセル期限を段階的に確認する。`Groups`は実際の団体人数を直接表す区分ではない点に注意する。
+3. **高リスク予約への優先対応**: 予測確率0.30以上を低コストな自動対応の対象とし、個別対応は確率上位層へ絞る。
 
-3. **モデルによる高リスク予約の優先対応**  
-   閾値0.30以上の12,022件を自動対応の対象とし、電話など負荷の高い対応は確率上位層へ絞ります。
+施策の効果は未検証です。実務では対象群と比較群を無作為割付するA/Bテストで、キャンセル率・施策コスト・利益への影響を確認します。ROI感度分析は補足Notebookとして残していますが、公開ダッシュボードの機能には含めていません。
 
-### 費用対効果の試算
+## 技術スタック
 
-施策コスト300円、キャンセル防止1件あたりの追加利益12,000円という仮定では、損益分岐となるキャンセル削減率は約4.5%でした。削減率5%の場合の差引利益は395,400円です。これらは実績ではなく、実際のコスト・限界利益・再販売率に置き換えるためのシミュレーションです。
+Python / pandas / NumPy / Matplotlib / Seaborn / scikit-learn / SHAP / Streamlit / Plotly / PostgreSQL / Docker Compose / JupyterLab
 
-![費用対効果の感度分析](images/roi_sensitivity.png)
-
-追加の感度分析では、施策コスト、防止1件あたりの追加利益、キャンセル削減率を個別・同時に変更し、黒字と赤字の境界を確認できるようにしました。対象内の実キャンセル6,670件は過去のFinal Testに基づく事後集計であり、将来の効果を保証する値ではありません。
-
-![施策コストと追加利益の感度分析](images/roi_sensitivity_heatmap.png)
-
-### Streamlitシミュレーター
-
-[`app.py`](app.py)では、施策コスト（0〜1,000円）、キャンセル防止1件あたりの追加利益（3,000〜30,000円）、キャンセル削減率（0〜20%）を操作できます。差引利益、損益分岐点、ROI、削減率別グラフ、費用と利益のヒートマップが即時に更新されます。
-
-アプリは公開済みの集計値だけを使用するため、CSVやPostgreSQLがなくても単体で動作します。計算処理は[`src/roi_simulator.py`](src/roi_simulator.py)にまとめ、Notebookとアプリで共通利用しています。
-
-施策効果は、確定済みモデルで対象を抽出したうえでControl群とTreatment群へ無作為割付するA/Bテストで検証する計画です。
-
-## 8. 考察と今後の課題
-
-- 予約IDがなく、完全一致行を同一予約と断定できない
-- 予約日は到着日とLead Timeから近似している
-- SHAPやセグメント別キャンセル率は因果効果を示さない
-- Final TestでもTrainとの性能差があり、将来期間での監視が必要
-- 予測確率の校正、ホテル別・時期別の性能、公平性の確認が必要
-- 施策の効果と費用はA/Bテストで検証する必要がある
-
-## 9. ディレクトリ構成
+## 構成
 
 ```text
-.
-├── README.md
-├── app.py                 # Streamlit費用対効果シミュレーター
-├── requirements.txt
-├── .gitignore
-├── .streamlit/            # 公開用テーマ設定（secrets.tomlは除外）
-├── data/                  # CSVはGit管理対象外
-├── docker/                # PostgreSQL環境
-├── images/                # README掲載画像
-├── notebooks/             # 01〜05の完成版Notebook
-├── sql/                   # テーブル作成・読込・EDA集計
-├── src/                   # 共通計算・図の出力・公開前検証スクリプト
-└── tests/                 # 費用対効果計算とアプリのテスト
+app.py                    # Streamlitダッシュボード
+data/                     # ローカルCSV配置先（Git管理外）
+models/                   # 保存済みPipeline
+notebooks/                # EDA、予測、SHAP、施策提案、ROI感度分析
+sql/                      # PostgreSQL用の集計SQL
+src/                      # 前処理器・ダッシュボード共通処理
+tests/                    # 自動テスト
+docker/                   # PostgreSQL環境
 ```
 
-## 10. 実行方法
-
-### データの準備
-
-Kaggleから`hotel_bookings.csv`を取得し、`data/hotel_bookings.csv`へ配置します。CSVは`.gitignore`で除外されています。
-
-### Python環境
+## ローカル実行
 
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-jupyter lab
-```
-
-Notebookは`01_EDA.ipynb`から番号順に実行します。それぞれ単独でも実行できるよう、必要な読み込みと前処理を含めています。
-
-費用対効果シミュレーターの起動：
-
-```bash
 streamlit run app.py
 ```
 
-ブラウザで表示された画面から条件を変更できます。アプリだけを試す場合、データセットやPostgreSQLの準備は不要です。
-
-Streamlit Community Cloudでは、このGitHubリポジトリ、`main`ブランチ、エントリーポイント`app.py`を指定してデプロイできます。必要な依存関係とテーマ設定はリポジトリ内に含めています。認証情報は使用しないため、Secretsの登録は不要です。
-
-テストの実行：
+ローカルにCSVを置く場合は、`data/hotel_bookings.csv`へ配置してください。CSVがない場合は、アプリがTidyTuesdayの公開CSVを取得します。保存済みPipelineは`models/final_random_forest_pipeline.joblib`に含まれ、Predictionページの推論に使用します。
 
 ```bash
 python -m unittest discover -s tests
-```
-
-README画像の再出力と公開前検証：
-
-```bash
-python src/export_readme_figures.py
 python src/validate_project.py
 ```
 
-### PostgreSQL / Docker
+## 注意点・今後の課題
 
-```bash
-# PowerShell
-Copy-Item docker/.env.example docker/.env
-
-# macOS/Linux
-# cp docker/.env.example docker/.env
-
-# docker/.envのパスワードを変更してから起動する
-docker compose --env-file docker/.env -f docker/docker-compose.yml up -d
-docker exec hotel-booking-postgres psql -U hotel_user -d hotel_booking -f /sql/00_create_table.sql
-docker exec hotel-booking-postgres psql -U hotel_user -d hotel_booking -f /sql/01_load_data.sql
-docker exec hotel-booking-postgres psql -U hotel_user -d hotel_booking -f /sql/02_eda_queries.sql
-```
-
-ポート`5434`が他のPostgreSQLで使用中の場合は、`docker/.env`の`POSTGRES_PORT`を未使用のポートへ変更してください。
-
-詳細は[`sql/README.md`](sql/README.md)を参照してください。
-
+- 予約IDがないため、完全一致行を同一予約と断定して削除していません。
+- 予約日は到着日とLead Timeから推定しています。
+- モデルの性能は時期やホテル運用の変化で低下する可能性があり、継続的な監視が必要です。
+- 実施施策の費用・利益・キャンセル削減効果はA/Bテストで検証する必要があります。

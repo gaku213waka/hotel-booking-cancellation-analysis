@@ -1,12 +1,7 @@
-# Data directory
+# データの扱い
 
-`hotel_bookings.csv`はGit管理対象外です。
+`hotel_bookings.csv`はGit管理の対象外です。ローカルでNotebookやSQLを実行する場合は、このディレクトリに配置してください。
 
-1. [Kaggle: Hotel booking demand](https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand)からCSVを取得します。
-2. ファイル名を`hotel_bookings.csv`として、このディレクトリに配置します。
-3. `data/hotel_bookings.csv`が存在する状態でNotebookまたはSQLの読み込み処理を実行します。
+公開ダッシュボードでは、ローカルCSVがない場合にTidyTuesdayが公開している同一の`hotels.csv`を実行時に取得します。取得先は [TidyTuesday: Hotels](https://github.com/rfordatascience/tidytuesday/tree/main/data/2020/2020-02-11) です。
 
-本プロジェクトで確認したCSVは119,390行・32列です。先頭列のヘッダーが空欄のため、Notebookでは`hotel`へ変更しています。
-
-原データについては、António, Almeida, and Nunes (2019), [Hotel booking demand datasets](https://doi.org/10.1016/j.dib.2018.11.126)も参照してください。
-
+元データは António, de Almeida, and Nunes (2019), *Hotel booking demand datasets* のCC BY 4.0データです。出典を表示し、元CSVはこのリポジトリから再配布しません。
